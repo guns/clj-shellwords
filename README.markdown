@@ -48,6 +48,10 @@ We can protect against this by using the `shell-escape` function to escape
 metacharacters in our shell argument:
 
 ```clojure
+(ns example
+  (:require [clj-shellwords.core :refer [shell-escape]]
+            [clojure.java.shell :refer [sh]]))
+
 (defn command-available? [cmd]
   (let [escaped-cmd (shell-escape cmd)]
     (zero? (:exit (sh "sh" "-c" (str "command -v " escaped-cmd))))))

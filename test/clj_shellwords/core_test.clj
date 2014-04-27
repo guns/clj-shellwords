@@ -1,13 +1,12 @@
-(ns com.sungpae.shellwords-test
+(ns clj-shellwords.core-test
   "Compares output against the Ruby version of shellwords."
-  (:require [clojure.java.shell :refer [sh]]
+  (:require [clj-shellwords.core :refer [shell-escape shell-join shell-split]]
+            [clojure.java.shell :refer [sh]]
             [clojure.string :as string]
             [clojure.test :refer [is]]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.generators :as g :refer [such-that]]
-            [clojure.test.check.properties :refer [for-all]]
-            [com.sungpae.shellwords :refer [shell-escape shell-join
-                                            shell-split]]))
+            [clojure.test.check.properties :refer [for-all]]))
 
 (def string-without-0x1F
   "^_  U+001F  <control>  (INFORMATION SEPARATOR ONE)"

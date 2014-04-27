@@ -21,7 +21,7 @@
 ;; OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ;; SUCH DAMAGE.
 
-(ns com.sungpae.shellwords
+(ns clj-shellwords.core
   "Adaptations of methods from Ruby's Shellwords module.
 
    https://github.com/ruby/ruby/blob/trunk/lib/shellwords.rb
