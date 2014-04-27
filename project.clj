@@ -1,4 +1,4 @@
-(defproject clj-shellwords "1.0.0"
+(defproject clj-shellwords "1.0.1"
   :description "Port of Ruby's Shellwords module"
   :url "https://github.com/guns/clj-shellwords"
   :license {:name "Ruby License"

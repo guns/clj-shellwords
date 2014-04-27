@@ -11,7 +11,7 @@ Port of the Shellwords module from Ruby 2.1.0.
 Leiningen dependency:
 
 ```clojure
-[com.sungpae.shellwords "1.0.0"]
+[clj-shellwords "1.0.1"]
 ```
 
 Or, just copy and paste into your project! It's a small file, and the
