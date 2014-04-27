@@ -63,8 +63,8 @@
   "Splits a string into an array of tokens in the same way the UNIX Bourne
    shell does.
 
-     (shell-split \"one two 'three four'\")
-     ; [\"one\" \"two\" \"three four\"]
+     (shell-split \"these are 'three shell tokens'\")
+     ; [\"these\" \"are\" \"three shell tokens\"]
 
    Ported from Ruby's Shellwords#shellsplit()"
   [line]

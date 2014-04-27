@@ -50,8 +50,8 @@ metacharacters in our shell argument:
 Bourne-compatible shell:
 
 ```clojure
-(shell-split "these are 'three words'")
-; -> ["these" "are" "three words"]
+(shell-split "these are 'three shell tokens'")
+; -> ["these" "are" "three shell tokens"]
 ```
 
 This is useful when working with direct input from a shell.
