@@ -131,3 +131,31 @@
             [(conj words (str field)) (StringBuilder.)]
             [words field]))
         [[] (StringBuilder.)] ms))))
+
+;; # Builds a command line string from an argument list, +array+.
+;; #
+;; # All elements are joined into a single string with fields separated by a
+;; # space, where each element is escaped for Bourne shell and stringified using
+;; # +to_s+.
+;; #
+;; #   ary = ["There's", "a", "time", "and", "place", "for", "everything"]
+;; #   argv = Shellwords.join(ary)
+;; #   argv #=> "There\\'s a time and place for everything"
+;; #
+;; # Array#shelljoin is a shortcut for this function.
+;; #
+;; #   ary = ["Don't", "rock", "the", "boat"]
+;; #   argv = ary.shelljoin
+;; #   argv #=> "Don\\'t rock the boat"
+;; #
+;; # You can also mix non-string objects in the elements as allowed in Array#join.
+;; #
+;; #   output = `#{['ps', '-p', $$].shelljoin}`
+;; #
+;; def shelljoin(array)
+;;   array.map { |arg| shellescape(arg) }.join(' ')
+;; end
+(defn shell-join
+  "Ported from Ruby's Shellwords#shellescape()"
+  [coll]
+  (string/join " " (mapv shell-escape coll)))
