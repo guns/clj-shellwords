@@ -27,97 +27,46 @@
    https://github.com/ruby/ruby/blob/trunk/lib/shellwords.rb
 
    Authors:
+
      * Wakou Aoyama
      * Akinori MUSHA <knu@iDaemons.org>
 
    This port maintained by:
+
      * Sung Pae <self@sungpae.com>"
   (:require [clojure.string :as string]))
 
-;; # Escapes a string so that it can be safely used in a Bourne shell
-;; # command line.  +str+ can be a non-string object that responds to
-;; # +to_s+.
-;; #
-;; # Note that a resulted string should be used unquoted and is not
-;; # intended for use in double quotes nor in single quotes.
-;; #
-;; #   argv = Shellwords.escape("It's better to give than to receive")
-;; #   argv #=> "It\\'s\\ better\\ to\\ give\\ than\\ to\\ receive"
-;; #
-;; # String#shellescape is a shorthand for this function.
-;; #
-;; #   argv = "It's better to give than to receive".shellescape
-;; #   argv #=> "It\\'s\\ better\\ to\\ give\\ than\\ to\\ receive"
-;; #
-;; #   # Search files in lib for method definitions
-;; #   pattern = "^[ \t]*def "
-;; #   open("| grep -Ern #{pattern.shellescape} lib") { |grep|
-;; #     grep.each_line { |line|
-;; #       file, lineno, matched_line = line.split(':', 3)
-;; #       # ...
-;; #     }
-;; #   }
-;; #
-;; # It is the caller's responsibility to encode the string in the right
-;; # encoding for the shell environment where this string is used.
-;; #
-;; # Multibyte characters are treated as multibyte characters, not bytes.
-;; #
-;; # Returns an empty quoted String if +str+ has a length of zero.
-;; def shellescape(str)
-;;   str = str.to_s
-;;
-;;   # An empty argument will be skipped, so return empty quotes.
-;;   return "''" if str.empty?
-;;
-;;   str = str.dup
-;;
-;;   # Treat multibyte characters as is.  It is caller's responsibility
-;;   # to encode the string in the right encoding for the shell
-;;   # environment.
-;;   str.gsub!(/([^A-Za-z0-9_\-.,:\/@\n])/, "\\\\\\1")
-;;
-;;   # A LF cannot be escaped with a backslash because a backslash + LF
-;;   # combo is regarded as line continuation and simply ignored.
-;;   str.gsub!(/\n/, "'\n'")
-;;
-;;   return str
-;; end
 (defn shell-escape
-  "Ported from Ruby's Shellwords#shellescape()"
-  [s]
-  (if (empty? s)
-    "''"
-    (-> s
-        (string/replace #"([^A-Za-z0-9_\-.,:\/@\n])" "\\\\$1")
-        (string/replace #"\n" "'\n'"))))
+  "Escapes a string so that it can be safely used in a Bourne shell command
+   line. Argument will be converted to a string if it is not a string.
 
-;; # Splits a string into an array of tokens in the same way the UNIX
-;; # Bourne shell does.
-;; #
-;; #   argv = Shellwords.split('here are "two words"')
-;; #   argv #=> ["here", "are", "two words"]
-;; #
-;; # String#shellsplit is a shortcut for this function.
-;; #
-;; #   argv = 'here are "two words"'.shellsplit
-;; #   argv #=> ["here", "are", "two words"]
-;; def shellsplit(line)
-;;   words = []
-;;   field = ''
-;;   line.scan(/\G\s*(?>([^\s\\\'\"]+)|'([^\']*)'|"((?:[^\"\\]|\\.)*)"|(\\.?)|(\S))(\s|\z)?/m) do
-;;     |word, sq, dq, esc, garbage, sep|
-;;     raise ArgumentError, "Unmatched double quote: #{line.inspect}" if garbage
-;;     field << (word || sq || (dq || esc).gsub(/\\(.)/, '\\1'))
-;;     if sep
-;;       words << field
-;;       field = ''
-;;     end
-;;   end
-;;   words
-;; end
+   Note that the resulting string should be used unquoted.
+
+     (shell-escape \"It's better to give than to receive\")
+     ; \"It\\'s\\ better\\ to\\ give\\ than\\ to\\ receive\"
+
+   Returns the empty shell string \"''\" if s has a length of zero.
+
+   Ported from Ruby's Shellwords#shellescape()"
+  [s]
+  (let [s (str s)]
+    (if (empty? s)
+      ;; An empty argument will be skipped, so return empty quotes
+      "''"
+      (-> s
+          (string/replace #"([^A-Za-z0-9_\-.,:\/@\n])" "\\\\$1")
+          ;; A LF cannot be escaped with a backslash because a backslash + LF
+          ;; combo is regarded as a line continuation and consequently ignored
+          (string/replace #"\n" "'\n'")))))
+
 (defn shell-split
-  "Ported from Ruby's Shellwords#shellsplit()"
+  "Splits a string into an array of tokens in the same way the UNIX Bourne
+   shell does.
+
+     (shell-split \"one two 'three four'\")
+     ; [\"one\" \"two\" \"three four\"]
+
+   Ported from Ruby's Shellwords#shellsplit()"
   [line]
   ;; Note that the Pattern is in DOTALL mode
   (let [ms (re-seq #"(?s)\G\s*(?>([^\s\\\'\"]+)|'([^\']*)'|\"((?:[^\"\\]|\\.)*)\"|(\\.?)|(\S))(\s|\z)?" line)]
@@ -132,30 +81,13 @@
             [words field]))
         [[] (StringBuilder.)] ms))))
 
-;; # Builds a command line string from an argument list, +array+.
-;; #
-;; # All elements are joined into a single string with fields separated by a
-;; # space, where each element is escaped for Bourne shell and stringified using
-;; # +to_s+.
-;; #
-;; #   ary = ["There's", "a", "time", "and", "place", "for", "everything"]
-;; #   argv = Shellwords.join(ary)
-;; #   argv #=> "There\\'s a time and place for everything"
-;; #
-;; # Array#shelljoin is a shortcut for this function.
-;; #
-;; #   ary = ["Don't", "rock", "the", "boat"]
-;; #   argv = ary.shelljoin
-;; #   argv #=> "Don\\'t rock the boat"
-;; #
-;; # You can also mix non-string objects in the elements as allowed in Array#join.
-;; #
-;; #   output = `#{['ps', '-p', $$].shelljoin}`
-;; #
-;; def shelljoin(array)
-;;   array.map { |arg| shellescape(arg) }.join(' ')
-;; end
 (defn shell-join
-  "Ported from Ruby's Shellwords#shellescape()"
+  "Builds a command line string from a collection. Non-string elements of the
+   collection are converted to strings.
+
+     (shell-join [\"Don't\", \"rock\", \"the\", \"boat\"])
+     ; \"Don\\'t rock the boat\"
+
+   Ported from Ruby's Shellwords#shellescape()"
   [coll]
   (string/join " " (mapv shell-escape coll)))
